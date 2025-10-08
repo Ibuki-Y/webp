@@ -187,6 +187,32 @@ func C_webpEncodeLosslessRGBA(
 	))
 }
 
+func C_webpEncodeRGBAWithConfig(
+	pix *C_uint8_t,
+	width C_int, height C_int, stride C_int,
+	lossless C_int, quality C_float,
+	method C_int, image_hint C_int, target_size C_int, target_psnr C_float,
+	segments C_int, sns_strength C_int, filter_strength C_int, filter_sharpness C_int,
+	filter_type C_int, autofilter C_int, alpha_compression C_int, alpha_filtering C_int,
+	pass C_int, show_compressed C_int, preprocessing C_int, partitions C_int,
+	partition_limit C_int, emulate_jpeg_size C_int, thread_level C_int, low_memory C_int,
+	near_lossless C_int, exact C_int, use_delta_palette C_int, use_sharp_yuv C_int,
+	output_size *C_size_t,
+) *C_uint8_t {
+	return (*C_uint8_t)(C.webpEncodeRGBAWithConfig(
+		(*C.uint8_t)(pix),
+		(C.int)(width), (C.int)(height), (C.int)(stride),
+		(C.int)(lossless), (C.float)(quality),
+		(C.int)(method), (C.int)(image_hint), (C.int)(target_size), (C.float)(target_psnr),
+		(C.int)(segments), (C.int)(sns_strength), (C.int)(filter_strength), (C.int)(filter_sharpness),
+		(C.int)(filter_type), (C.int)(autofilter), (C.int)(alpha_compression), (C.int)(alpha_filtering),
+		(C.int)(pass), (C.int)(show_compressed), (C.int)(preprocessing), (C.int)(partitions),
+		(C.int)(partition_limit), (C.int)(emulate_jpeg_size), (C.int)(thread_level), (C.int)(low_memory),
+		(C.int)(near_lossless), (C.int)(exact), (C.int)(use_delta_palette), (C.int)(use_sharp_yuv),
+		(*C.size_t)(output_size),
+	))
+}
+
 func C_webpMalloc(size C_size_t) unsafe.Pointer {
 	return C.webpMalloc(C.size_t(size))
 }

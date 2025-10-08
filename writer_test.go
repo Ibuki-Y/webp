@@ -16,7 +16,7 @@ type tTester struct {
 	Quality  float32 // 0 ~ 100
 	MaxDelta int
 	MinDelta int
-	Exact    bool
+	Exact    int
 }
 
 var tTesterList = []tTester{
@@ -35,7 +35,7 @@ var tTesterList = []tTester{
 	tTester{
 		Filename: "2_webp_ll.png",
 		Lossless: true,
-		Exact:    true,
+		Exact:    1,
 		Quality:  90,
 		MaxDelta: 0,
 	},
@@ -48,7 +48,7 @@ var tTesterList = []tTester{
 	tTester{
 		Filename: "4_webp_ll.png",
 		Lossless: true,
-		Exact:    true,
+		Exact:    1,
 		Quality:  90,
 		MaxDelta: 0,
 	},
@@ -62,7 +62,7 @@ var tTesterList = []tTester{
 		Filename: "4_webp_ll.png",
 		Lossless: true,
 		Quality:  90,
-		Exact:    false,
+		Exact:    0,
 		MaxDelta: 13,
 		MinDelta: 10,
 	},
@@ -92,7 +92,7 @@ func TestEncode(t *testing.T) {
 
 		// Compare the average delta to the tolerance level.
 		var want int
-		if !v.Lossless || !v.Exact {
+		if !v.Lossless || v.Exact == 0 {
 			want = v.MaxDelta
 		}
 		got := averageDelta(img0, img1)

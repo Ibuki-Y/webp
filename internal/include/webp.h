@@ -55,6 +55,18 @@ uint8_t* webpEncodeRGBA(
 	size_t* output_size
 );
 
+uint8_t* webpEncodeRGBAWithConfig(
+	const uint8_t* rgba, int width, int height, int stride,
+	int lossless, float quality,
+	int method, int image_hint, int target_size, float target_psnr,
+	int segments, int sns_strength, int filter_strength, int filter_sharpness,
+	int filter_type, int autofilter, int alpha_compression, int alpha_filtering,
+	int pass, int show_compressed, int preprocessing, int partitions,
+	int partition_limit, int emulate_jpeg_size, int thread_level, int low_memory,
+	int near_lossless, int exact, int use_delta_palette, int use_sharp_yuv,
+	size_t* output_size
+);
+
 uint8_t* webpEncodeLosslessGray(
 	const uint8_t* gray, int width, int height, int stride,
 	size_t* output_size
