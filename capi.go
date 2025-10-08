@@ -231,7 +231,7 @@ func webpEncodeRGBAWithConfig(pix []byte, width, height, stride int, opt *Option
 		err = errors.New("webpEncodeRGBAWithConfig: bad arguments")
 		return
 	}
-	if stride < width*4 && len(pix) < height*stride {
+	if stride < width*4 || len(pix) < height*stride {
 		err = errors.New("webpEncodeRGBAWithConfig: bad arguments")
 		return
 	}
