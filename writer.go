@@ -18,13 +18,16 @@ import (
 const DefaulQuality = 90
 
 // Options are the encoding parameters.
+// Advanced options (Method and below) are only used when encoding RGBA images.
+// For Gray and RGB images, only Lossless and Quality are used.
 type Options struct {
 	Lossless bool
 	Quality  float32 // 0 ~ 100
 
+	// Advanced encoding options (RGBA only)
 	// Quality/speed trade-off (0=fast, 6=slower-better). Default: 4
 	Method int
-	// Hint for image type (lossless only for now). Default: 0
+	// Hint for image type (lossless: 0=default, 1=picture, 2=photo, 3=graphic; lossy: ignored). Default: 0
 	ImageHint int
 	// If non-zero, set the desired target size in bytes.
 	// Takes precedence over the 'compression' parameter. Default: 0
@@ -73,11 +76,11 @@ type Options struct {
 	ThreadLevel bool
 	// If set, reduce memory usage (but increase CPU use). Default: false
 	LowMemory bool
-	// Near lossless encoding [0 = max loss .. 100 = off (default)]. Default: 100
+	// Near lossless encoding [0 = max loss .. 100 = off (default)]. Lossless mode only. Default: 100
 	NearLossless int
-	// If non-zero, preserve the exact RGB values under
-	// transparent area. Otherwise, discard this invisible
-	// RGB information for better compression. The default value is 0.
+	// If non-zero, preserve the exact RGB values under transparent area.
+	// Otherwise, discard this invisible RGB information for better compression.
+	// Lossless mode only. The default value is 0.
 	Exact int
 	// Reserved for future lossless feature. Default: false
 	UseDeltaPalette bool
@@ -90,11 +93,14 @@ type colorModeler interface {
 }
 
 // applyDefaults fills in default values for unset fields in Options.
+// Note: Zero values (0, false) are treated as "unset" and will be replaced with defaults.
+// If you need to explicitly set a parameter to 0, this function will override it.
+// This is a known limitation of the current design.
 func applyDefaults(opt *Options) *Options {
 	if opt == nil {
 		opt = &Options{}
 	}
-	// Apply defaults based on the config settings you provided
+	// Apply defaults based on WebP library defaults
 	if opt.Quality == 0 {
 		opt.Quality = DefaulQuality
 	}
@@ -135,10 +141,13 @@ func applyDefaults(opt *Options) *Options {
 }
 
 // hasAdvancedOptions checks if Options has any advanced encoding parameters set.
+// It compares against default values to determine if advanced configuration is needed.
 func hasAdvancedOptions(opt *Options) bool {
 	if opt == nil {
 		return false
 	}
+	// Check if any advanced option differs from its default value
+	// Note: Zero values for numeric fields are treated as "not set" and will be filled by applyDefaults
 	return opt.Method != 0 || opt.ImageHint != 0 || opt.TargetSize != 0 || opt.TargetPsnr != 0 ||
 		opt.Segments != 0 || opt.SnsStrength != 0 || opt.FilterStrength != 0 || opt.FilterSharpness != 0 ||
 		opt.FilterType != 0 || opt.Autofilter || opt.AlphaCompression != 0 || opt.AlphaFiltering != 0 ||
@@ -174,7 +183,8 @@ func encode(w io.Writer, m image.Image, opt *Options) (err error) {
 				return
 			}
 		case *image.Gray:
-			// Fall back to simple encoding for Gray
+			// Fall back to simple encoding for Gray images.
+			// Advanced options are not supported for grayscale images.
 			if opt.Lossless {
 				if output, err = EncodeLosslessGray(m); err != nil {
 					return
@@ -185,7 +195,8 @@ func encode(w io.Writer, m image.Image, opt *Options) (err error) {
 				}
 			}
 		case *RGBImage:
-			// Fall back to simple encoding for RGB
+			// Fall back to simple encoding for RGB images.
+			// Advanced options are not supported for RGB images.
 			if opt.Lossless {
 				if output, err = EncodeLosslessRGB(m); err != nil {
 					return

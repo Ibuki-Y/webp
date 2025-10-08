@@ -260,6 +260,12 @@ uint8_t* webpEncodeRGBAWithConfig(
 	config.use_delta_palette = use_delta_palette;
 	config.use_sharp_yuv = use_sharp_yuv;
 
+	// Validate the configuration
+	if (!WebPValidateConfig(&config)) {
+		WebPPictureFree(&pic);
+		return NULL;
+	}
+
 	pic.use_argb = 1;
 	pic.width = width;
 	pic.height = height;
