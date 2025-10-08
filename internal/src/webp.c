@@ -212,6 +212,74 @@ uint8_t* webpEncodeRGBA(
 	return output;
 }
 
+uint8_t* webpEncodeRGBAWithConfig(
+	const uint8_t* rgba, int width, int height, int stride,
+	int lossless, float quality,
+	int method, int image_hint, int target_size, float target_psnr,
+	int segments, int sns_strength, int filter_strength, int filter_sharpness,
+	int filter_type, int autofilter, int alpha_compression, int alpha_filtering,
+	int pass, int show_compressed, int preprocessing, int partitions,
+	int partition_limit, int emulate_jpeg_size, int thread_level, int low_memory,
+	int near_lossless, int exact, int use_delta_palette, int use_sharp_yuv,
+	size_t* output_size
+) {
+	WebPPicture pic;
+	WebPMemoryWriter wrt;
+	WebPConfig config;
+	int ok;
+
+	if (!WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, quality) || !WebPPictureInit(&pic)) {
+		return NULL;
+	}
+
+	// Apply all configuration parameters
+	config.lossless = lossless;
+	config.quality = quality;
+	config.method = method;
+	config.image_hint = image_hint;
+	config.target_size = target_size;
+	config.target_PSNR = target_psnr;
+	config.segments = segments;
+	config.sns_strength = sns_strength;
+	config.filter_strength = filter_strength;
+	config.filter_sharpness = filter_sharpness;
+	config.filter_type = filter_type;
+	config.autofilter = autofilter;
+	config.alpha_compression = alpha_compression;
+	config.alpha_filtering = alpha_filtering;
+	config.pass = pass;
+	config.show_compressed = show_compressed;
+	config.preprocessing = preprocessing;
+	config.partitions = partitions;
+	config.partition_limit = partition_limit;
+	config.emulate_jpeg_size = emulate_jpeg_size;
+	config.thread_level = thread_level;
+	config.low_memory = low_memory;
+	config.near_lossless = near_lossless;
+	config.exact = exact;
+	config.use_delta_palette = use_delta_palette;
+	config.use_sharp_yuv = use_sharp_yuv;
+
+	pic.use_argb = 1;
+	pic.width = width;
+	pic.height = height;
+
+	pic.writer = WebPMemoryWrite;
+	pic.custom_ptr = &wrt;
+	WebPMemoryWriterInit(&wrt);
+
+	ok = WebPPictureImportRGBA(&pic, rgba, stride) && WebPEncode(&config, &pic);
+
+	WebPPictureFree(&pic);
+	if (!ok) {
+		WebPMemoryWriterClear(&wrt);
+		return NULL;
+	}
+	*output_size = wrt.size;
+
+	return wrt.mem;
+}
+
 
 uint8_t* webpEncodeLosslessGray(
 	const uint8_t* gray, int width, int height, int stride,

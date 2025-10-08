@@ -126,6 +126,13 @@ func EncodeRGBA(m image.Image, quality float32) (data []byte, err error) {
 	return
 }
 
+// EncodeRGBAWithConfig encodes an RGBA image with detailed WebP encoding options.
+func EncodeRGBAWithConfig(m image.Image, opt *Options) (data []byte, err error) {
+	p := toRGBAImage(m)
+	data, err = webpEncodeRGBAWithConfig(p.Pix, p.Rect.Dx(), p.Rect.Dy(), p.Stride, opt)
+	return
+}
+
 func EncodeLosslessGray(m image.Image) (data []byte, err error) {
 	p := toGrayImage(m)
 	data, err = webpEncodeLosslessGray(p.Pix, p.Rect.Dx(), p.Rect.Dy(), p.Stride)

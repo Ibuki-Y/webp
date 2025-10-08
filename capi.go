@@ -226,6 +226,50 @@ func webpEncodeRGBA(pix []byte, width, height, stride int, quality float32) (out
 	return
 }
 
+func webpEncodeRGBAWithConfig(pix []byte, width, height, stride int, opt *Options) (output []byte, err error) {
+	if len(pix) == 0 || width <= 0 || height <= 0 || stride <= 0 {
+		err = errors.New("webpEncodeRGBAWithConfig: bad arguments")
+		return
+	}
+	if stride < width*4 && len(pix) < height*stride {
+		err = errors.New("webpEncodeRGBAWithConfig: bad arguments")
+		return
+	}
+	if opt == nil {
+		err = errors.New("webpEncodeRGBAWithConfig: options is nil")
+		return
+	}
+
+	var cptr_size C.size_t
+	var cptr = C.webpEncodeRGBAWithConfig(
+		(*C.uint8_t)(unsafe.Pointer(&pix[0])), C.int(width), C.int(height), C.int(stride),
+		boolToInt(opt.Lossless), C.float(opt.Quality),
+		C.int(opt.Method), C.int(opt.ImageHint), C.int(opt.TargetSize), C.float(opt.TargetPsnr),
+		C.int(opt.Segments), C.int(opt.SnsStrength), C.int(opt.FilterStrength), C.int(opt.FilterSharpness),
+		C.int(opt.FilterType), boolToInt(opt.Autofilter), C.int(opt.AlphaCompression), C.int(opt.AlphaFiltering),
+		C.int(opt.Pass), boolToInt(opt.ShowCompressed), C.int(opt.Preprocessing), C.int(opt.Partitions),
+		C.int(opt.PartitionLimit), boolToInt(opt.EmulateJpegSize), boolToInt(opt.ThreadLevel), boolToInt(opt.LowMemory),
+		C.int(opt.NearLossless), C.int(opt.Exact), boolToInt(opt.UseDeltaPalette), boolToInt(opt.UseSharpYuv),
+		&cptr_size,
+	)
+	if cptr == nil || cptr_size == 0 {
+		err = errors.New("webpEncodeRGBAWithConfig: failed")
+		return
+	}
+	defer C.free(unsafe.Pointer(cptr))
+
+	output = make([]byte, int(cptr_size))
+	copy(output, ((*[1 << 30]byte)(unsafe.Pointer(cptr)))[0:len(output):len(output)])
+	return
+}
+
+func boolToInt(b bool) C.int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func webpEncodeLosslessGray(pix []byte, width, height, stride int) (output []byte, err error) {
 	if len(pix) == 0 || width <= 0 || height <= 0 || stride <= 0 {
 		err = errors.New("webpEncodeLosslessGray: bad arguments")
